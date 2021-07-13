@@ -6,26 +6,34 @@ import org.slf4j.LoggerFactory;
 public class Account {
 
 	protected int accountID;
-	protected String name;
+	protected String firstName;
+	protected String lastName;
 	protected String user;
 	protected String pass;
-	protected String accountName;
-	protected int level;
-	protected double accountBalance;
+	protected String checkingsName;
+	protected String savingsName;
+	protected double checkingsBalance;
+	protected double savingsBalance;
 	
 	private static Logger log = LoggerFactory.getLogger(Account.class);
 	
-	public Account(String name, String user, String pass, String accountName, int level, double accountBalance) {
+	public Account(String firstName, String lastName, String user, String pass, String checkingsName, String savingsName, double checkingsBalance, double savingsBalance) {
 		super();
-		this.name = name;
+		this.firstName = firstName;
+		this.lastName = lastName;
 		this.user = user;
 		this.pass = pass;
-		this.accountName = accountName;
-		this.level = level;
-		if(accountBalance >= 0) {
-			this.accountBalance = accountBalance;
+		this.checkingsName = checkingsName;
+		if(checkingsBalance >= 0) {
+			this.checkingsBalance = checkingsBalance;
 		} else {
-			this.accountBalance = 0;
+			this.checkingsBalance = 0;
+			log.warn("You tried to set their balance less than 0 at construction.");
+		}
+		if(savingsBalance >= 0) {
+			this.savingsBalance = savingsBalance;
+		} else {
+			this.savingsBalance = 0;
 			log.warn("You tried to set their balance less than 0 at construction.");
 		}
 	}
@@ -42,12 +50,20 @@ public class Account {
 		this.accountID = accountID;
 	}
 
-	public String getName() {
-		return name;
+	public String getFirstName() {
+		return firstName;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setFirstName(String firstName) {
+		this.firstName = firstName;
+	}
+
+	public String getLastName() {
+		return lastName;
+	}
+
+	public void setLastName(String lastName) {
+		this.lastName = lastName;
 	}
 
 	public String getUser() {
@@ -66,42 +82,53 @@ public class Account {
 		this.pass = pass;
 	}
 
-	public String getAccountName() {
-		return accountName;
+	public String getCheckingsName() {
+		return checkingsName;
 	}
 
-	public void setAccountName(String accountName) {
-		this.accountName = accountName;
+	public void setCheckingsName(String accountName) {
+		this.checkingsName = accountName;
+	}
+	
+	public String getSavingsName() {
+		return savingsName;
 	}
 
-	public int getLevel() {
-		return level;
+	public void setSavingsName(String savingsName) {
+		this.savingsName = savingsName;
 	}
 
-	public void setLevel(int level) {
-		this.level = level;
+	public double getCheckingsBalance() {
+		return checkingsBalance;
 	}
 
-	public double getAccountBalance() {
-		return accountBalance;
+	public void setCheckingsBalance(double checkingsBalance) {
+		this.checkingsBalance = checkingsBalance;
 	}
 
-	public void setAccountBalance(double accountBalance) {
-		this.accountBalance = accountBalance;
+	public double getSavingsBalance() {
+		return savingsBalance;
+	}
+
+	public void setSavingsBalance(double savingsBalance) {
+		this.savingsBalance = savingsBalance;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		long temp;
-		temp = Double.doubleToLongBits(accountBalance);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + accountID;
-		result = prime * result + ((accountName == null) ? 0 : accountName.hashCode());
-		result = prime * result + level;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		long temp;
+		temp = Double.doubleToLongBits(checkingsBalance);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((checkingsName == null) ? 0 : checkingsName.hashCode());
+		result = prime * result + ((firstName == null) ? 0 : firstName.hashCode());
+		result = prime * result + ((lastName == null) ? 0 : lastName.hashCode());
 		result = prime * result + ((pass == null) ? 0 : pass.hashCode());
+		temp = Double.doubleToLongBits(savingsBalance);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((savingsName == null) ? 0 : savingsName.hashCode());
 		result = prime * result + ((user == null) ? 0 : user.hashCode());
 		return result;
 	}
@@ -115,26 +142,36 @@ public class Account {
 		if (getClass() != obj.getClass())
 			return false;
 		Account other = (Account) obj;
-		if (Double.doubleToLongBits(accountBalance) != Double.doubleToLongBits(other.accountBalance))
-			return false;
 		if (accountID != other.accountID)
 			return false;
-		if (accountName == null) {
-			if (other.accountName != null)
-				return false;
-		} else if (!accountName.equals(other.accountName))
+		if (Double.doubleToLongBits(checkingsBalance) != Double.doubleToLongBits(other.checkingsBalance))
 			return false;
-		if (level != other.level)
-			return false;
-		if (name == null) {
-			if (other.name != null)
+		if (checkingsName == null) {
+			if (other.checkingsName != null)
 				return false;
-		} else if (!name.equals(other.name))
+		} else if (!checkingsName.equals(other.checkingsName))
+			return false;
+		if (firstName == null) {
+			if (other.firstName != null)
+				return false;
+		} else if (!firstName.equals(other.firstName))
+			return false;
+		if (lastName == null) {
+			if (other.lastName != null)
+				return false;
+		} else if (!lastName.equals(other.lastName))
 			return false;
 		if (pass == null) {
 			if (other.pass != null)
 				return false;
 		} else if (!pass.equals(other.pass))
+			return false;
+		if (Double.doubleToLongBits(savingsBalance) != Double.doubleToLongBits(other.savingsBalance))
+			return false;
+		if (savingsName == null) {
+			if (other.savingsName != null)
+				return false;
+		} else if (!savingsName.equals(other.savingsName))
 			return false;
 		if (user == null) {
 			if (other.user != null)
@@ -146,10 +183,12 @@ public class Account {
 
 	@Override
 	public String toString() {
-		return "Account [accountID=" + accountID + ", name=" + name + ", user=" + user + ", pass=" + pass
-				+ ", accountName=" + accountName + ", level=" + level + ", accountBalance=" + accountBalance
+		return "Account [accountID=" + accountID + ", firstName=" + firstName + ", lastName=" + lastName + ", user="
+				+ user + ", pass=" + pass + ", checkingsName=" + checkingsName + ", savingsName=" + savingsName
+				 + ", checkingsBalance=" + checkingsBalance + ", savingsBalance=" + savingsBalance
 				+ ", toString()=" + super.toString() + "]";
 	}
+
 
 	
 }

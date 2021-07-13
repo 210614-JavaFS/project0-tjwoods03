@@ -9,12 +9,10 @@ import java.util.Scanner;
 import com.revature.daos.ConnectionUtil;
 import com.revature.daos.UserDAOImpl;
 import com.revature.models.User;
-import com.revature.services.UserServices;
 
 public class UserController {
 	
 	private static Scanner scan = new Scanner(System.in);
-	private static UserServices userService = new UserServices();
 
 	public void updateUserInfo() throws SQLException {
 		Connection connect = ConnectionUtil.getConnection();
@@ -44,11 +42,11 @@ public class UserController {
 			
 		}
 	
-		System.out.println("What is your first name?");
-		String firstName = scan.nextLine();
-		
-		System.out.println("What is your last name?");
-		String lastName = scan.nextLine();
+//		System.out.println("What is your first name?");
+//		String firstName = scan.nextLine();
+//		
+//		System.out.println("What is your last name?");
+//		String lastName = scan.nextLine();
 		
 		System.out.println("What is your address?");
 		String address = scan.nextLine();
@@ -60,13 +58,11 @@ public class UserController {
 		System.out.println("What is your email?");
 		String email = scan.nextLine();
 		
-		User user = new User(userName, passWord, firstName ,lastName, phoneNumber, address, email, 1, true);
+		//User user = new User(userName, passWord, firstName ,lastName, phoneNumber, address, email, 1, true);
 		
-		if(userService.addUser(user)) {
-			System.out.println("\n Your account has been successfully updated! \n");
-		}else {
-			System.out.println("Something went wrong!");
-		}
+		statement.executeUpdate("UPDATE user_info SET address = '" + address +"', phone_number = '" + phoneNumber + "', email = '" + email + "' WHERE username = '" + userName + "';");
+		
+		System.out.println("\n**** Update complete **** \n");
 	}
 	
 	public void viewUser() throws SQLException {

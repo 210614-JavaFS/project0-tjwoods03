@@ -1,7 +1,6 @@
 package com.revature.controllers;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -24,9 +23,6 @@ public class AccountController{
 	private static AccountController account = new AccountController();
 	private static UserController userController = new UserController();
 	private static UserServices userService = new UserServices();
-	private ArrayList<Account> addAccounts = new ArrayList<Account>();
-	
-	
 	private Scanner scan = new Scanner(System.in);
 	
 	protected String name;
@@ -53,6 +49,7 @@ public class AccountController{
 				return null;
 			case "3":
 				System.out.println("Thanks for visiting Bank of Revature. We hope to see you again soon!");
+				System.exit(0);
 				break;
 			default:
 				System.out.println("Invalid input, please try again.");	
@@ -66,12 +63,13 @@ public class AccountController{
 	
 	
 	
+	@SuppressWarnings("resource")
 	public void enterAccount(Account account) throws SQLException {
 			
 			Connection connect = ConnectionUtil.getConnection();
 			Statement statement = connect.createStatement();
 			ResultSet result = null;
-		
+		while(true) {
 			System.out.println("\n *****Please login***** \n");
 			System.out.println("Enter username:"); 
 			String userName = scan.nextLine();
@@ -107,6 +105,7 @@ public class AccountController{
 						}
 						}catch(SQLException e) {
 							e.printStackTrace();
+							log.warn("The balance couldn't be found.");
 						}
 						break;
 					
@@ -181,6 +180,7 @@ public class AccountController{
 						}
 						}catch(SQLException e) {
 							e.printStackTrace();
+							log.warn("Transfer action failed");
 						} 
 						
 						break;
@@ -236,6 +236,7 @@ public class AccountController{
 							}
 							}catch(SQLException e) {
 								e.printStackTrace();
+								log.warn("Withdraw action failed");
 							} 
 						break;
 					//Deposit money into account
@@ -290,6 +291,7 @@ public class AccountController{
 							}
 							}catch(SQLException e) {
 								e.printStackTrace();
+								log.warn("Deposit action failed");
 							} 
 						break;
 					//Update or add personal information
@@ -349,6 +351,7 @@ public class AccountController{
 									statement.executeUpdate("UPDATE user_info SET active = TRUE WHERE username = '" + username +"';");
 									}catch(SQLException e) {
 										e.printStackTrace();
+										log.warn("Activation action failed.");
 									}
 								break;
 							case "2":
@@ -356,6 +359,7 @@ public class AccountController{
 									statement.executeUpdate("UPDATE user_info SET active = FALSE WHERE username = '" + username +"';");
 									}catch(SQLException e) {
 										e.printStackTrace();
+										log.warn("Deactivation action failed.");
 									}
 								break;
 							default:
@@ -379,6 +383,7 @@ public class AccountController{
 								}
 								}catch(SQLException e) {
 									e.printStackTrace();
+									log.warn("Unable to view users account.");
 								}
 							break;
 						case "3":
@@ -388,26 +393,367 @@ public class AccountController{
 							userController.viewUser();
 							break;
 						case "5":
+							System.out.println("\n*****Look forward to your service again!***** \n");
 							System.exit(0);
 						default:
 							System.out.println("Invalid input, please try again.");
 							break;
 					}
 					}
-				} 
+				} //end of employee login
 				
 				//Admin login
 				while(accountLevel == 3){
 					System.out.println("Admin welcome");
-					System.exit(0);
-				}
+					while(true) {
+						System.out.println("What would you like to do? \n"
+								+ "1) Activate/deactivate a customers account. \n"
+								+ "2) Delete a customers account.\n"
+								+ "3) View an accounts balance. \n"
+								+ "4) View an accounts information. \n"
+								+ "5) View a users information. \n"
+								+ "6) Edit a users person information. \n"
+								+ "7) Transfer money for a user. \n"
+								+ "8) Withdraw money for a user. \n"
+								+ "9) Deposit money for a user. \n"
+								+ "10) Exit application.");
+						String choice = scan.nextLine();
+						switch(choice) {
+						//Activate/deactivate account
+							case "1":
+								System.out.println("What is the username of the account you'd like to activate/deactivate.");
+								String username = scan.nextLine();
+								
+								result = statement.executeQuery("SELECT * FROM user_info WHERE username = '" + username + "'");
+								if(result.next()) {
+									System.out.println("Thank you. \n");
+								}else {
+								System.out.println("Sorry that was username doesn't match anything in our system. Please try again.");
+								name = scan.nextLine();
+								}
+								
+								System.out.println("Would you like to: \n"
+										+ "1) Activate the account \n"
+										+ "2) Deactivate the account.");
+								String response = scan.nextLine();
+								switch(response) {
+									case "1":
+										try(Connection conn = ConnectionUtil.getConnection()){
+											statement.executeUpdate("UPDATE user_info SET active = TRUE WHERE username = '" + username +"';");
+											}catch(SQLException e) {
+												log.warn("Activation action failed.");
+												e.printStackTrace();
+											}
+										break;
+									case "2":
+										try(Connection conn = ConnectionUtil.getConnection()){
+											statement.executeUpdate("UPDATE user_info SET active = FALSE WHERE username = '" + username +"';");
+											}catch(SQLException e) {
+												e.printStackTrace();
+												log.warn("Deactivation action failed.");
+											}
+										break;
+									default:
+										System.out.println("Invalid input, please try again.");
+										break;
+									}
+								break;
+							//Delete an account
+							case "2":
+								System.out.println("What is the username of the account you'd like to delete.");
+								String username2 = scan.nextLine();
+								
+								result = statement.executeQuery("SELECT * FROM user_info WHERE username = '" + username2 + "'");
+								if(result.next()) {
+									System.out.println("\nThank you. That account has now been deleted. \n");
+								}else {
+								System.out.println("Sorry that was username doesn't match anything in our system. Please try again.");
+								name = scan.nextLine();
+								}
+								statement.executeUpdate("DELETE FROM BANK_ACCOUNT WHERE USER_NAME = '" + username2 + "';");
+								statement.executeUpdate("DELETE FROM user_info WHERE USERNAME = '" + username2 + "';");
+								break;
+							//View an accounts balance
+							case "3":
+								System.out.println("What users account do you want to view?");
+								userName = scan.nextLine();
+								try(Connection conn = ConnectionUtil.getConnection()){
+									ResultSet getBalance = statement.executeQuery("SELECT checkings_balance FROM bank_account WHERE user_name = '" + userName + "';");
+									while(getBalance.next()) {
+									Double balance = getBalance.getDouble(1);
+									System.out.println("They currently have $" +balance + " in their checkings account.");
+									}
+									getBalance = statement.executeQuery("SELECT savings_balance FROM bank_account WHERE user_name = '" + userName + "';");
+									while(getBalance.next()) {
+									Double balance = getBalance.getDouble(1);
+									System.out.println("\nThey currently have $" +balance + " in their savings account. \n");
+									}
+									}catch(SQLException e) {
+										e.printStackTrace();
+										log.warn("Delete account action failed.");
+									}
+								break;
+							//View an accounts information
+							case "4":
+								showOneAccount();
+								break;
+							//View a users personal information
+							case "5":
+								userController.viewUser();
+								break;
+							//Edit a users person info
+							case "6":
+								System.out.println("What is the username of the account you'd like to edit?");
+								String username3 = scan.nextLine();
+;								System.out.println("What is their address?");
+								String address = scan.nextLine();
+								
+								
+								System.out.println("What is their phone number?");
+								String phoneNumber = scan.nextLine();
+								
+								System.out.println("What is their email?");
+								String email = scan.nextLine();
+								
+								//User user = new User(userName, passWord, firstName ,lastName, phoneNumber, address, email, 1, true);
+								
+								statement.executeUpdate("UPDATE user_info SET address = '" + address +"', phone_number = '" + phoneNumber + "', email = '" + email + "' WHERE username = '" + username3 + "';");
+								
+								System.out.println("\n**** Update complete **** \n");
+								break;
+							//Transfer money in an account	
+							case "7":
+								System.out.println("What is the username of the account you'd like to transfer money around in.");
+								String username6 = scan.nextLine();
+								
+								result = statement.executeQuery("SELECT * FROM user_info WHERE username = '" + username6 + "'");
+								if(result.next()) {
+									System.out.println("Thank you. \n");
+								}else {
+								System.out.println("Sorry that was username doesn't match anything in our system. Please try again.");
+								name = scan.nextLine();
+								}
+								try(Connection conn = ConnectionUtil.getConnection()){
+									System.out.println("How would you like to transfer money? \n"
+											+ "1) Checkings to Savings \n"
+											+ "2) Savings to Checkings");
+									String transfer = scan.nextLine();
+									switch(transfer) {
+									case "1":
+										result = statement.executeQuery("SELECT checkings_balance, savings_balance FROM bank_account WHERE user_name = '" + username6 + "';");
+										if(result.next()) {
+										Double checkingBalance = result.getDouble(1);
+										Double savingsBalance =  result.getDouble(2);
+										
+										System.out.println("How much would you like to transfer? They currently have $" + checkingBalance + " in their checking account.");
+										double amount = scan.nextDouble();
+										scan.nextLine();
+										while(amount > checkingBalance) {
+											System.out.println("You can't take out more than they currently have. Please try again.");
+											amount = scan.nextDouble();
+										}
+					
+										statement.executeUpdate("UPDATE bank_account SET checkings_balance = " + (checkingBalance - amount) + " WHERE user_name = '" + username6 +"';");
+										statement.executeUpdate("UPDATE bank_account SET savings_balance = " + (savingsBalance + amount) + " WHERE user_name = '" + username6 +"';");
+										ResultSet getCheckingsBalance = statement.executeQuery("SELECT checkings_balance FROM bank_account WHERE user_name = '" + username6 + "';");
+											while(getCheckingsBalance.next()) {
+												Double currentBalance = getCheckingsBalance.getDouble(1);
+												System.out.println("They now have $" + currentBalance + " in their checking account.");
+											}
+											ResultSet getSavingsBalance = statement.executeQuery("SELECT savings_balance FROM bank_account WHERE user_name = '" + userName + "';");
+											while(getSavingsBalance.next()) {
+												Double currentBalance = getSavingsBalance.getDouble(1);
+												System.out.println("They now have $" + currentBalance + " in their savings account.");
+											}
+										}
+										break;
+									case "2":
+										result = statement.executeQuery("SELECT checkings_balance, savings_balance FROM bank_account WHERE user_name = '" + username6 + "';");
+										if(result.next()) {
+										Double checkingBalance = result.getDouble(1);
+										Double savingsBalance =  result.getDouble(2);
+										
+										System.out.println("How much would you like to transfer? They currently have $" + savingsBalance + " in their checking account.");
+										double amount = scan.nextDouble();
+										scan.nextLine();
+										while(amount > savingsBalance) {
+											System.out.println("You can't take out more than they currently have. Please try again.");
+											amount = scan.nextDouble();
+										}
+					
+										statement.executeUpdate("UPDATE bank_account SET savings_balance = " + (savingsBalance - amount) + " WHERE user_name = '" + username6 +"';");
+										statement.executeUpdate("UPDATE bank_account SET checkings_balance = " + (checkingBalance + amount) + " WHERE user_name = '" + username6 +"';");
+										ResultSet getCheckingsBalance = statement.executeQuery("SELECT checkings_balance FROM bank_account WHERE user_name = '" + username6 + "';");
+											while(getCheckingsBalance.next()) {
+												Double currentBalance = getCheckingsBalance.getDouble(1);
+												System.out.println("They now have $" + currentBalance + " in their checking account.");
+											}
+											ResultSet getSavingsBalance = statement.executeQuery("SELECT savings_balance FROM bank_account WHERE user_name = '" + username6 + "';");
+											while(getSavingsBalance.next()) {
+												Double currentBalance = getSavingsBalance.getDouble(1);
+												System.out.println("They now have $" + currentBalance + " in their savings account.");
+											}
+										}
+										break;
+									default:
+										System.out.println("Invalid input, please try again.");
+										break;
+									}
+									}catch(SQLException e) {
+										e.printStackTrace();
+										log.warn("Transfer action failed.");
+									} 
+								break;
+							//Withdraw money from an account
+							case "8":
+								System.out.println("What is the username of the account you'd like to withdraw from.");
+								String username7 = scan.nextLine();
+								
+								result = statement.executeQuery("SELECT * FROM user_info WHERE username = '" + username7 + "'");
+								if(result.next()) {
+									System.out.println("Thank you. \n");
+								}else {
+								System.out.println("Sorry that was username doesn't match anything in our system. Please try again.");
+								name = scan.nextLine();
+								}
+								try(Connection conn = ConnectionUtil.getConnection()){
+									System.out.println("What account would you like to withdraw from? \n"
+											+ "1) Checking. \n"
+											+ "2) Savings.");
+									String outOf = scan.nextLine();
+									switch(outOf) {
+									case "1":
+										result = statement.executeQuery("SELECT checkings_balance FROM bank_account WHERE user_name = '" + username7 + "';");
+										if(result.next()) {
+										Double balance = result.getDouble(1);
+										System.out.println("How much would you like to deposit? They currently have $" + balance + " in their checking account.");
+										double amount = scan.nextDouble();
+										scan.nextLine();
+										while(amount > balance) {
+											System.out.println("You can't take out more than they currently have. Please try again.");
+											amount = scan.nextDouble();
+										}
+										statement.executeUpdate("UPDATE bank_account SET checkings_balance = " + (balance - amount) + " WHERE user_name = '" + username7 +"';");
+										ResultSet getCurrentBalance = statement.executeQuery("SELECT checkings_balance FROM bank_account WHERE user_name = '" + username7 + "';");
+											while(getCurrentBalance.next()) {
+												Double currentBalance = getCurrentBalance.getDouble(1);
+												System.out.println("They now have $" + currentBalance + " in their checking account.");
+											}
+										}
+										break;
+									case "2":
+										result = statement.executeQuery("SELECT savings_balance FROM bank_account WHERE user_name = '" + username7 + "';");
+										if(result.next()) {
+										Double balance = result.getDouble(1);
+										System.out.println("How much would you like to deposit? They currently have $" + balance + " in their savings account.");
+										double amount = scan.nextDouble();
+										scan.nextLine();
+										while(amount > balance) {
+											System.out.println("You can't take out more than they currently have. Please try again.");
+											amount = scan.nextDouble();
+										}
+										statement.executeUpdate("UPDATE bank_account SET savings_balance = " + (balance - amount) + " WHERE user_name = '" + username7 +"';");
+										ResultSet getCurrentBalance = statement.executeQuery("SELECT savings_balance FROM bank_account WHERE user_name = '" + username7 + "';");
+											while(getCurrentBalance.next()) {
+												Double currentBalance = getCurrentBalance.getDouble(1);
+												System.out.println("They now have $" + currentBalance + " in their savings account.");
+											}
+										}
+										break;
+									default:
+										System.out.println("Invalid input, please try again.");
+										break;
+									}
+									}catch(SQLException e) {
+										e.printStackTrace();
+										log.warn("Withdraw action failed.");
+									} 
+								break;
+							//Deposit money into an account
+							case "9":
+								System.out.println("What is the username of the account you'd like to deposit into.");
+								String username8 = scan.nextLine();
+								
+								result = statement.executeQuery("SELECT * FROM user_info WHERE username = '" + username8 + "'");
+								if(result.next()) {
+									System.out.println("Thank you. \n");
+								}else {
+								System.out.println("Sorry that was username doesn't match anything in our system. Please try again.");
+								name = scan.nextLine();
+								}
+								try(Connection conn = ConnectionUtil.getConnection()){
+									System.out.println("What account would you like to deposit into? \n"
+											+ "1) Checking. \n"
+											+ "2) Savings.");
+									String into = scan.nextLine();
+									switch(into) {
+									case "1":
+										result = statement.executeQuery("SELECT checkings_balance FROM bank_account WHERE user_name = '" + username8 + "';");
+										if(result.next()) {
+										Double balance = result.getDouble(1);
+										System.out.println("How much would you like to deposit? They currently have $" + balance + " in their checking account.");
+										double amount = scan.nextDouble();
+										scan.nextLine();
+										while(amount < 0) {
+											System.out.println("You can't enter a negative number. Please try again.");
+											amount = scan.nextDouble();
+										}
+										statement.executeUpdate("UPDATE bank_account SET checkings_balance = " + (balance + amount) + " WHERE user_name = '" + username8 +"';");
+										ResultSet getCurrentBalance = statement.executeQuery("SELECT checkings_balance FROM bank_account WHERE user_name = '" + username8 + "';");
+											while(getCurrentBalance.next()) {
+												Double currentBalance = getCurrentBalance.getDouble(1);
+												System.out.println("They now have $" + currentBalance + " in their checking account.");
+											}
+										}
+										break;
+									case "2":
+										result = statement.executeQuery("SELECT savings_balance FROM bank_account WHERE user_name = '" + username8 + "';");
+										if(result.next()) {
+										Double balance = result.getDouble(1);
+										System.out.println("How much would you like to deposit? They currently have $" + balance + " in their savings account.");
+										double amount = scan.nextDouble();
+										scan.nextLine();
+										while(amount < 0) {
+											System.out.println("You can't enter a negative number. Please try again.");
+											amount = scan.nextDouble();
+										}
+										statement.executeUpdate("UPDATE bank_account SET savings_balance = " + (balance + amount) + " WHERE user_name = '" + username8 +"';");
+										ResultSet getCurrentBalance = statement.executeQuery("SELECT savings_balance FROM bank_account WHERE user_name = '" + username8 + "';");
+											while(getCurrentBalance.next()) {
+												Double currentBalance = getCurrentBalance.getDouble(1);
+												System.out.println("They now have $" + currentBalance + " in their savings account.");
+											}
+										}
+										break;
+									default:
+										System.out.println("Invalid input, please try again.");
+										break;
+									}
+									}catch(SQLException e) {
+										e.printStackTrace();
+										log.warn("Deposit action failed.");
+									} 
+								break;
+							//Exit application
+							case "10":
+								System.out.println("\n*****Look forward to your service again!***** \n");
+								System.exit(0);
+								break;
+							default:
+								System.out.println("Invalid input. Please try again.");
+								break;
+						}
+					}
+					
+				}//end of admin login
+				
 				while(accountLevel != 1 | accountLevel != 2 | accountLevel != 3) {
 					System.out.println("Attempt to login unsuccessful. Please try again.");
 					enterAccount(account);
 				}
 				
 			}//end of if statement enterAccount
-		
+		}	
 	}//end of enterAccount
 	
 	public void newAccount() throws SQLException{
@@ -452,6 +798,7 @@ public class AccountController{
 		
 		if(userService.addUser(userAccount)) {
 			System.out.println("\n Your account has been successfully created! \n");
+			log.info("An account was successfully created.");
 		}else {
 			System.out.println("Something went wrong!");
 		}

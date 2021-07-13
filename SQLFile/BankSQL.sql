@@ -31,9 +31,3 @@ active boolean
 INSERT INTO user_info (username, pass_word, account_level, active)
 	VALUES ('employee', 'employee', '2', true),
 	('admin', 'admin', '3', true);
-
-SELECT checkings_balance FROM BANK_ACCOUNT WHERE user_name = 'employee';
-
---SELECT account_balance FROM bank_account WHERE user_name = 'asdf';
-
---UPDATE BANK_ACCOUNT SET ACCOUNT_BALANCE = 1234 WHERE user_name = 'asdf';

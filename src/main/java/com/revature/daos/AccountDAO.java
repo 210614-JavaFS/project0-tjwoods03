@@ -10,7 +10,6 @@ public interface AccountDAO {
 
 	Account findByAccountName(String name);
 
-	boolean updateAccount(Account account);
 
 	boolean addAccount(Account account);
 

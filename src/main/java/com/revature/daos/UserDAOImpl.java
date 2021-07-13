@@ -8,10 +8,15 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.revature.models.Account;
 import com.revature.models.User;
 
 public class UserDAOImpl implements UserDAO{
+	
+	private static Logger log = LoggerFactory.getLogger(Account.class);
 
 	@Override
 	public List<User> findAllUsers() {
@@ -40,6 +45,7 @@ public class UserDAOImpl implements UserDAO{
 		
 		}catch(SQLException e) {
 				e.printStackTrace();
+				log.warn("No users were to be found.");
 		}
 	return null;
 	}
@@ -66,19 +72,46 @@ public class UserDAOImpl implements UserDAO{
 				user.setAddress(result.getString("address"));
 				user.setPhoneNumber(result.getString("phone_number"));
 				user.setEmail(result.getString("email"));
+				user.setAccountLevel(result.getInt("account_level"));
+				user.setActive(result.getBoolean("active"));
 			}
 			
 			return user;
 			
 		}catch(SQLException e) {
 			e.printStackTrace();
+			log.warn("The user wasn't able to be found");
 		}
 		return null;
 	}
 
 	@Override
 	public boolean updateUser(User user) {
-		// TODO Auto-generated method stub
+		try (Connection conn = ConnectionUtil.getConnection()){
+			String sql = "INSERT INTO user_info (first_name, last_name, address, phone_number, email, account_level, active)"
+					+ " VALUES (?,?,?,?,?,?,?);";
+			
+			PreparedStatement statement = conn.prepareStatement(sql);
+
+
+			int index = 0;
+			statement.setString(++index, user.getFirstName());
+			statement.setString(++index, user.getLastName());
+			statement.setString(++index, user.getAddress());
+			statement.setString(++index, user.getPhoneNumber());
+			statement.setString(++index, user.getEmail());
+			statement.setInt(++index, user.getAccountLevel());
+			statement.setBoolean(++index, user.isActive());
+			
+			statement.execute();
+		
+			return true;
+			
+		}catch(SQLException e) {
+			e.printStackTrace();
+			log.warn("The user wasn't able to be updated.");
+		}
+		
 		return false;
 	}
 
@@ -121,6 +154,7 @@ public class UserDAOImpl implements UserDAO{
 			
 		}catch(SQLException e) {
 			e.printStackTrace();
+			log.warn("The user wasn't able to be added.");
 		}
 		return false;
 	}

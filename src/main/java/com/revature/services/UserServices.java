@@ -19,6 +19,10 @@ public class UserServices {
 		return userDAO.findByUsersName(name);
 	}
 	
+	public boolean updateUser(User user) {
+		return userDAO.updateUser(user);
+	}
+	
 	public boolean addUser(User user) {
 		return userDAO.addUser(user);
 	}
