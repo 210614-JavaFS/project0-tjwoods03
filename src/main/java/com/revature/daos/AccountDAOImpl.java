@@ -30,6 +30,7 @@ public class AccountDAOImpl implements AccountDAO{
 				account.setName(result.getString("full_name"));
 				account.setUser(result.getString("user_name"));
 				account.setAccountBalance(result.getDouble("account_balance"));
+				account.setAccountName(result.getString("account_type"));
 				list.add(account);
 			}
 		
@@ -57,9 +58,11 @@ public class AccountDAOImpl implements AccountDAO{
 			
 			//ResultSets have a cursor similarly to Scanners or other I/O classes. 
 			while(result.next()) {
+				account.setAccountID(result.getInt("account_id"));
 				account.setName(result.getString("full_name"));
 				account.setUser(result.getString("user_name"));
 				account.setPass(result.getString("pass_word"));
+				account.setAccountName(result.getString("account_type"));
 				account.setAccountBalance(result.getDouble("account_balance"));
 			}
 			
@@ -80,8 +83,8 @@ public class AccountDAOImpl implements AccountDAO{
 	@Override
 	public boolean addAccount(Account account) {
 		try (Connection conn = ConnectionUtil.getConnection()){
-			String sql = "INSERT INTO bank_account (full_name, user_name, pass_word, account_level, account_balance)"
-					+ " VALUES (?,?,?,?,?);";
+			String sql = "INSERT INTO bank_account (full_name, user_name, pass_word, account_level, account_name, account_balance)"
+					+ " VALUES (?,?,?,?,?,?);";
 			
 			PreparedStatement statement = conn.prepareStatement(sql);
 			
@@ -90,6 +93,7 @@ public class AccountDAOImpl implements AccountDAO{
 			statement.setString(++index, account.getUser());
 			statement.setString(++index, account.getPass());
 			statement.setInt(++index, account.getLevel());
+			statement.setString(++index, account.getAccountName());
 			statement.setDouble(++index, account.getAccountBalance());
 			
 			statement.execute();

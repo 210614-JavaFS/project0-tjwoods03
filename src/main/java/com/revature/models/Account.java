@@ -9,16 +9,18 @@ public class Account {
 	protected String name;
 	protected String user;
 	protected String pass;
+	protected String accountName;
 	protected int level;
 	protected double accountBalance;
 	
 	private static Logger log = LoggerFactory.getLogger(Account.class);
 	
-	public Account(String name, String user, String pass, int level, double accountBalance) {
+	public Account(String name, String user, String pass, String accountName, int level, double accountBalance) {
 		super();
 		this.name = name;
 		this.user = user;
 		this.pass = pass;
+		this.accountName = accountName;
 		this.level = level;
 		if(accountBalance >= 0) {
 			this.accountBalance = accountBalance;
@@ -64,6 +66,14 @@ public class Account {
 		this.pass = pass;
 	}
 
+	public String getAccountName() {
+		return accountName;
+	}
+
+	public void setAccountName(String accountName) {
+		this.accountName = accountName;
+	}
+
 	public int getLevel() {
 		return level;
 	}
@@ -88,6 +98,7 @@ public class Account {
 		temp = Double.doubleToLongBits(accountBalance);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		result = prime * result + accountID;
+		result = prime * result + ((accountName == null) ? 0 : accountName.hashCode());
 		result = prime * result + level;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((pass == null) ? 0 : pass.hashCode());
@@ -104,9 +115,14 @@ public class Account {
 		if (getClass() != obj.getClass())
 			return false;
 		Account other = (Account) obj;
-		if (Double.doubleToLongBits(accountBalance) != Double.doubleToLongBits(this.accountBalance))
+		if (Double.doubleToLongBits(accountBalance) != Double.doubleToLongBits(other.accountBalance))
 			return false;
 		if (accountID != other.accountID)
+			return false;
+		if (accountName == null) {
+			if (other.accountName != null)
+				return false;
+		} else if (!accountName.equals(other.accountName))
 			return false;
 		if (level != other.level)
 			return false;
@@ -130,10 +146,10 @@ public class Account {
 
 	@Override
 	public String toString() {
-		return "Account [accountID=" + accountID + ", name=" + name + ", user=" + user + ", pass=" + pass + ", level="
-				+ level + ", accountBalance=" + accountBalance + ", toString()=" + super.toString() + "]";
+		return "Account [accountID=" + accountID + ", name=" + name + ", user=" + user + ", pass=" + pass
+				+ ", accountName=" + accountName + ", level=" + level + ", accountBalance=" + accountBalance
+				+ ", toString()=" + super.toString() + "]";
 	}
 
-	
 	
 }
